@@ -1,95 +1,116 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [smiles, setSmiles] = useState("");
+  const [prediction, setPrediction] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+  const examples = [
+    "CCO",       // Ethanol
+    "c1ccccc1",  // Benzene
+    "CC(=O)O",   // Acetic acid
+  ];
+
+  const handleExampleClick = (example) => {
+    setSmiles(example);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setPrediction(null);
+
+    try {
+      const response = await fetch("/api/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ smiles }),
+      });
+      const data = await response.json();
+      setPrediction(data.prediction);
+    } catch (error) {
+      console.error("Error:", error);
+      setPrediction("An error occurred.");
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <main style={styles.main}>
+      <h1 style={styles.title}>Pharmasee</h1>
+      <p>Enter a SMILES string to predict ADMET properties:</p>
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <input
+          type="text"
+          placeholder="Enter SMILES"
+          value={smiles}
+          onChange={(e) => setSmiles(e.target.value)}
+          style={styles.input}
+        />
+        <button type="submit" style={styles.button}>
+          Predict
+        </button>
+      </form>
+      {loading && <p>Loading...</p>}
+      {prediction && (
+        <div style={styles.result}>
+          <h2>Prediction</h2>
+          <pre>{prediction}</pre>
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      )}
+      <h2>Examples</h2>
+      <div style={styles.examples}>
+        {examples.map((ex, idx) => (
+          <button key={idx} onClick={() => handleExampleClick(ex)} style={styles.exampleButton}>
+            {ex}
+          </button>
+        ))}
+      </div>
+    </main>
   );
 }
+
+const styles = {
+  main: {
+    maxWidth: "600px",
+    margin: "0 auto",
+    padding: "1rem",
+    fontFamily: "Arial, sans-serif",
+  },
+  title: {
+    textAlign: "center",
+  },
+  form: {
+    display: "flex",
+    flexWrap: "wrap",
+    marginBottom: "1rem",
+  },
+  input: {
+    flex: "1 1 auto",
+    padding: "0.5rem",
+    marginRight: "0.5rem",
+    marginBottom: "0.5rem",
+    minWidth: "0",
+  },
+  button: {
+    padding: "0.5rem 1rem",
+    marginBottom: "0.5rem",
+  },
+  result: {
+    backgroundColor: "#f9f9f9",
+    padding: "1rem",
+    borderRadius: "5px",
+  },
+  examples: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.5rem",
+  },
+  exampleButton: {
+    padding: "0.5rem 1rem",
+    cursor: "pointer",
+  },
+};
