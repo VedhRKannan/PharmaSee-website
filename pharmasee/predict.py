@@ -4,6 +4,7 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import DataStructs
+import xgboost
 
 # Function to convert SMILES to Morgan Fingerprint
 def mol_to_fp(smiles, radius=2, nBits=1024):
@@ -19,7 +20,7 @@ def mol_to_fp(smiles, radius=2, nBits=1024):
 
 # Load all models
 names = ["lip", "sol"]
-loaded_models = {name: joblib.load(f"pharmasee/saved_models/{name}.pkl") for name in names}
+loaded_models = {name: joblib.load(f"saved_models/{name}.pkl") for name in names}
 
 def main():
     if len(sys.argv) < 2:

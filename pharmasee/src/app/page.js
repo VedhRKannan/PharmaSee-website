@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 
@@ -6,12 +6,9 @@ export default function Home() {
   const [smiles, setSmiles] = useState("");
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const examples = [
-    "CCO",       // Ethanol
-    "c1ccccc1",  // Benzene
-    "CC(=O)O",   // Acetic acid
-  ];
+  const examples = ["CCO", "c1ccccc1", "CC(=O)O"];
 
   const handleExampleClick = (example) => {
     setSmiles(example);
@@ -21,26 +18,32 @@ export default function Home() {
     e.preventDefault();
     setLoading(true);
     setPrediction(null);
+    setError(null);
 
     try {
       const response = await fetch("/api/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ smiles }),
+        body: JSON.stringify({ smiles }), // Ensure JSON format
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
       const data = await response.json();
       setPrediction(data.prediction);
     } catch (error) {
-      console.error("Error:", error);
-      setPrediction("An error occurred.");
+      console.error("Fetch error:", error);
+      setError("Failed to fetch prediction. Check console for details.");
     }
 
     setLoading(false);
   };
 
   return (
-    <main style={styles.main}>
-      <h1 style={styles.title}>Pharmasee</h1>
+    <div style={styles.container}>
+      <h1>Pharmasee</h1>
       <p>Enter a SMILES string to predict ADMET properties:</p>
       <form onSubmit={handleSubmit} style={styles.form}>
         <input
@@ -50,11 +53,10 @@ export default function Home() {
           onChange={(e) => setSmiles(e.target.value)}
           style={styles.input}
         />
-        <button type="submit" style={styles.button}>
-          Predict
-        </button>
+        <button type="submit" style={styles.button}>Predict</button>
       </form>
       {loading && <p>Loading...</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
       {prediction && (
         <div style={styles.result}>
           <h2>Prediction</h2>
@@ -69,19 +71,16 @@ export default function Home() {
           </button>
         ))}
       </div>
-    </main>
+    </div>
   );
 }
 
 const styles = {
-  main: {
+  container: {
     maxWidth: "600px",
     margin: "0 auto",
     padding: "1rem",
     fontFamily: "Arial, sans-serif",
-  },
-  title: {
-    textAlign: "center",
   },
   form: {
     display: "flex",
@@ -93,11 +92,9 @@ const styles = {
     padding: "0.5rem",
     marginRight: "0.5rem",
     marginBottom: "0.5rem",
-    minWidth: "0",
   },
   button: {
     padding: "0.5rem 1rem",
-    marginBottom: "0.5rem",
   },
   result: {
     backgroundColor: "#f9f9f9",
