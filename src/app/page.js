@@ -14,11 +14,11 @@ export default function Home() {
     setSmiles(example);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setLoading(true);
-    setPrediction(null);
     setError(null);
+    setPrediction(null);
 
     try {
       const response = await fetch("/api/predict", {
