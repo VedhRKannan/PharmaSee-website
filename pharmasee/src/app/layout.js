@@ -1,4 +1,5 @@
-// src/app/layout.js
+import { Analytics } from "@vercel/analytics/react"
+
 export const metadata = {
   title: "Pharmasee",
   description: "ADMET predictor by Pharmasee",
