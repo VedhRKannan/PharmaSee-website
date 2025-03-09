@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 
@@ -14,11 +14,11 @@ export default function Home() {
     setSmiles(example);
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
-    setError(null);
     setPrediction(null);
+    setError(null);
 
     try {
       const response = await fetch("/api/predict", {
@@ -28,16 +28,14 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("API Response:", data); // ✅ Log full response for debugging
-      setPrediction(data); // ✅ Store full JSON object instead of just `data.prediction`
+      setPrediction(data.prediction);
     } catch (error) {
       console.error("Fetch error:", error);
-      setError(`Failed to fetch prediction: ${error.message}`);
+      setError("Failed to fetch prediction. Check console for details.");
     }
 
     setLoading(false);
@@ -55,21 +53,16 @@ export default function Home() {
           onChange={(e) => setSmiles(e.target.value)}
           style={styles.input}
         />
-        <button type="submit" style={styles.button} disabled={loading}>
-          {loading ? "Predicting..." : "Predict"}
-        </button>
+        <button type="submit" style={styles.button}>Predict</button>
       </form>
-
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
-
       {prediction && (
         <div style={styles.result}>
           <h2>Prediction</h2>
-          <pre>{JSON.stringify(prediction, null, 2)}</pre> {/* ✅ Properly displays JSON */}
+          <pre>{JSON.stringify(prediction, null, 2)}</pre>
         </div>
       )}
-
       <h2>Examples</h2>
       <div style={styles.examples}>
         {examples.map((ex, idx) => (

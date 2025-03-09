@@ -1,4 +1,6 @@
-export const runtime = "nodejs"; // ✅ Ensures it's a function, not static
+import { spawn } from "child_process";
+
+export const runtime = "nodejs"; // ✅ Ensure it's a function, not a static file
 
 export async function POST(req) {
   try {
@@ -12,7 +14,6 @@ export async function POST(req) {
 
     console.log("Running Python script with input:", smiles);
 
-    const { spawn } = require("child_process");
     const pythonProcess = spawn("python3", ["predict.py", smiles]);
 
     return new Promise((resolve) => {
@@ -21,7 +22,9 @@ export async function POST(req) {
         console.log("Python Output:", data.toString());
         results += data.toString();
       });
+
       pythonProcess.stderr.on("data", (err) => console.error("Python Error:", err.toString()));
+
       pythonProcess.on("close", () => {
         console.log("Sending Response:", results);
         resolve(new Response(results.trim(), { status: 200, headers: { "Content-Type": "application/json" } }));
