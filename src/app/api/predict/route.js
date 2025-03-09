@@ -1,4 +1,4 @@
-export const runtime = "nodejs"; // ✅ Ensure Vercel treats it as a Node.js function
+export const runtime = "nodejs"; // ✅ Ensure Vercel treats this as a Node.js function
 
 export async function POST(req) {
   try {
