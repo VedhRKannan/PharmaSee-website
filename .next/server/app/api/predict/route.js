@@ -40,7 +40,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   POST: () => (/* binding */ POST),\n/* harmony export */   runtime: () => (/* binding */ runtime)\n/* harmony export */ });\n/* harmony import */ var python_shell__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! python-shell */ \"(rsc)/./node_modules/python-shell/index.js\");\n/* harmony import */ var python_shell__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(python_shell__WEBPACK_IMPORTED_MODULE_0__);\n\nconst runtime = \"nodejs\"; // Required for child_process to work\nasync function POST(req) {\n    try {\n        const { smiles } = await req.json();\n        if (!smiles) {\n            console.error(\"ERROR: No SMILES string provided.\");\n            return new Response(JSON.stringify({\n                error: \"No SMILES provided\"\n            }), {\n                status: 400\n            });\n        }\n        console.log(\"DEBUG: Running Python script with input:\", smiles);\n        let options = {\n            mode: \"text\",\n            pythonPath: \"/Users/ramalingamkannan/miniforge3/bin/python3\",\n            args: [\n                smiles\n            ]\n        };\n        return new Promise((resolve)=>{\n            const pyshell = new python_shell__WEBPACK_IMPORTED_MODULE_0__.PythonShell(\"predict.py\", options); // ✅ Correct PythonShell usage\n            let results = [];\n            let hasTimedOut = false;\n            // Collect Python output\n            pyshell.on(\"message\", function(message) {\n                if (!hasTimedOut) results.push(message);\n            });\n            // Handle errors\n            pyshell.on(\"error\", function(err) {\n                console.error(\"Python error:\", err);\n                resolve(new Response(JSON.stringify({\n                    error: \"Internal server error\"\n                }), {\n                    status: 500\n                }));\n            });\n            // When Python script exits\n            pyshell.on(\"close\", function(code) {\n                if (hasTimedOut) return; // Skip processing if timeout already triggered\n                console.log(\"DEBUG: Python script exited with code\", code);\n                console.log(\"DEBUG: Raw Python output:\", results);\n                try {\n                    const parsedOutput = JSON.parse(results.join(\"\\n\")); // ✅ Ensure correct JSON parsing\n                    resolve(new Response(JSON.stringify(parsedOutput), {\n                        status: 200\n                    }));\n                } catch (jsonError) {\n                    console.error(\"JSON Parse Error:\", jsonError);\n                    resolve(new Response(JSON.stringify({\n                        error: \"Invalid JSON response from Python script\"\n                    }), {\n                        status: 500\n                    }));\n                }\n            });\n            // **Timeout if Python takes too long**\n            setTimeout(()=>{\n                console.error(\"ERROR: Python script timed out.\");\n                hasTimedOut = true;\n                pyshell.terminate();\n                resolve(new Response(JSON.stringify({\n                    error: \"Python script timeout\"\n                }), {\n                    status: 500\n                }));\n            }, 10000); // 10 seconds timeout\n        });\n    } catch (error) {\n        console.error(\"API Error:\", error);\n        return new Response(JSON.stringify({\n            error: \"Server error\"\n        }), {\n            status: 500\n        });\n    }\n}\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9zcmMvYXBwL2FwaS9wcmVkaWN0L3JvdXRlLmpzIiwibWFwcGluZ3MiOiI7Ozs7Ozs7QUFBMkM7QUFFcEMsTUFBTUMsVUFBVSxTQUFTLENBQUMscUNBQXFDO0FBRS9ELGVBQWVDLEtBQUtDLEdBQUc7SUFDNUIsSUFBSTtRQUNGLE1BQU0sRUFBRUMsTUFBTSxFQUFFLEdBQUcsTUFBTUQsSUFBSUUsSUFBSTtRQUNqQyxJQUFJLENBQUNELFFBQVE7WUFDWEUsUUFBUUMsS0FBSyxDQUFDO1lBQ2QsT0FBTyxJQUFJQyxTQUFTQyxLQUFLQyxTQUFTLENBQUM7Z0JBQUVILE9BQU87WUFBcUIsSUFBSTtnQkFBRUksUUFBUTtZQUFJO1FBQ3JGO1FBRUFMLFFBQVFNLEdBQUcsQ0FBQyw0Q0FBNENSO1FBRXhELElBQUlTLFVBQVU7WUFDWkMsTUFBTTtZQUNOQyxZQUFZO1lBQ1pDLE1BQU07Z0JBQUNaO2FBQU87UUFDaEI7UUFFQSxPQUFPLElBQUlhLFFBQVEsQ0FBQ0M7WUFDbEIsTUFBTUMsVUFBVSxJQUFJbkIscURBQVdBLENBQUMsY0FBY2EsVUFBVSw4QkFBOEI7WUFFdEYsSUFBSU8sVUFBVSxFQUFFO1lBQ2hCLElBQUlDLGNBQWM7WUFFbEIsd0JBQXdCO1lBQ3hCRixRQUFRRyxFQUFFLENBQUMsV0FBVyxTQUFVQyxPQUFPO2dCQUNyQyxJQUFJLENBQUNGLGFBQWFELFFBQVFJLElBQUksQ0FBQ0Q7WUFDakM7WUFFQSxnQkFBZ0I7WUFDaEJKLFFBQVFHLEVBQUUsQ0FBQyxTQUFTLFNBQVVHLEdBQUc7Z0JBQy9CbkIsUUFBUUMsS0FBSyxDQUFDLGlCQUFpQmtCO2dCQUMvQlAsUUFBUSxJQUFJVixTQUFTQyxLQUFLQyxTQUFTLENBQUM7b0JBQUVILE9BQU87Z0JBQXdCLElBQUk7b0JBQUVJLFFBQVE7Z0JBQUk7WUFDekY7WUFFQSwyQkFBMkI7WUFDM0JRLFFBQVFHLEVBQUUsQ0FBQyxTQUFTLFNBQVVJLElBQUk7Z0JBQ2hDLElBQUlMLGFBQWEsUUFBUSwrQ0FBK0M7Z0JBRXhFZixRQUFRTSxHQUFHLENBQUMseUNBQXlDYztnQkFDckRwQixRQUFRTSxHQUFHLENBQUMsNkJBQTZCUTtnQkFFekMsSUFBSTtvQkFDRixNQUFNTyxlQUFlbEIsS0FBS21CLEtBQUssQ0FBQ1IsUUFBUVMsSUFBSSxDQUFDLFFBQVEsZ0NBQWdDO29CQUNyRlgsUUFBUSxJQUFJVixTQUFTQyxLQUFLQyxTQUFTLENBQUNpQixlQUFlO3dCQUFFaEIsUUFBUTtvQkFBSTtnQkFDbkUsRUFBRSxPQUFPbUIsV0FBVztvQkFDbEJ4QixRQUFRQyxLQUFLLENBQUMscUJBQXFCdUI7b0JBQ25DWixRQUFRLElBQUlWLFNBQVNDLEtBQUtDLFNBQVMsQ0FBQzt3QkFBRUgsT0FBTztvQkFBMkMsSUFBSTt3QkFBRUksUUFBUTtvQkFBSTtnQkFDNUc7WUFDRjtZQUVBLHVDQUF1QztZQUN2Q29CLFdBQVc7Z0JBQ1R6QixRQUFRQyxLQUFLLENBQUM7Z0JBQ2RjLGNBQWM7Z0JBQ2RGLFFBQVFhLFNBQVM7Z0JBQ2pCZCxRQUFRLElBQUlWLFNBQVNDLEtBQUtDLFNBQVMsQ0FBQztvQkFBRUgsT0FBTztnQkFBd0IsSUFBSTtvQkFBRUksUUFBUTtnQkFBSTtZQUN6RixHQUFHLFFBQVEscUJBQXFCO1FBQ2xDO0lBQ0YsRUFBRSxPQUFPSixPQUFPO1FBQ2RELFFBQVFDLEtBQUssQ0FBQyxjQUFjQTtRQUM1QixPQUFPLElBQUlDLFNBQVNDLEtBQUtDLFNBQVMsQ0FBQztZQUFFSCxPQUFPO1FBQWUsSUFBSTtZQUFFSSxRQUFRO1FBQUk7SUFDL0U7QUFDRiIsInNvdXJjZXMiOlsiL1VzZXJzL3JhbWFsaW5nYW1rYW5uYW4vY29kaW5nL1BoYXJtYVNlZS13ZWJzaXRlL3NyYy9hcHAvYXBpL3ByZWRpY3Qvcm91dGUuanMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgUHl0aG9uU2hlbGwgfSBmcm9tIFwicHl0aG9uLXNoZWxsXCI7XG5cbmV4cG9ydCBjb25zdCBydW50aW1lID0gXCJub2RlanNcIjsgLy8gUmVxdWlyZWQgZm9yIGNoaWxkX3Byb2Nlc3MgdG8gd29ya1xuXG5leHBvcnQgYXN5bmMgZnVuY3Rpb24gUE9TVChyZXEpIHtcbiAgdHJ5IHtcbiAgICBjb25zdCB7IHNtaWxlcyB9ID0gYXdhaXQgcmVxLmpzb24oKTtcbiAgICBpZiAoIXNtaWxlcykge1xuICAgICAgY29uc29sZS5lcnJvcihcIkVSUk9SOiBObyBTTUlMRVMgc3RyaW5nIHByb3ZpZGVkLlwiKTtcbiAgICAgIHJldHVybiBuZXcgUmVzcG9uc2UoSlNPTi5zdHJpbmdpZnkoeyBlcnJvcjogXCJObyBTTUlMRVMgcHJvdmlkZWRcIiB9KSwgeyBzdGF0dXM6IDQwMCB9KTtcbiAgICB9XG5cbiAgICBjb25zb2xlLmxvZyhcIkRFQlVHOiBSdW5uaW5nIFB5dGhvbiBzY3JpcHQgd2l0aCBpbnB1dDpcIiwgc21pbGVzKTtcblxuICAgIGxldCBvcHRpb25zID0ge1xuICAgICAgbW9kZTogXCJ0ZXh0XCIsXG4gICAgICBweXRob25QYXRoOiBcIi9Vc2Vycy9yYW1hbGluZ2Fta2FubmFuL21pbmlmb3JnZTMvYmluL3B5dGhvbjNcIiwgLy8g4pyFIEVuc3VyaW5nIHB5dGhvbjMgaXMgdXNlZFxuICAgICAgYXJnczogW3NtaWxlc10sXG4gICAgfTtcblxuICAgIHJldHVybiBuZXcgUHJvbWlzZSgocmVzb2x2ZSkgPT4ge1xuICAgICAgY29uc3QgcHlzaGVsbCA9IG5ldyBQeXRob25TaGVsbChcInByZWRpY3QucHlcIiwgb3B0aW9ucyk7IC8vIOKchSBDb3JyZWN0IFB5dGhvblNoZWxsIHVzYWdlXG5cbiAgICAgIGxldCByZXN1bHRzID0gW107XG4gICAgICBsZXQgaGFzVGltZWRPdXQgPSBmYWxzZTtcblxuICAgICAgLy8gQ29sbGVjdCBQeXRob24gb3V0cHV0XG4gICAgICBweXNoZWxsLm9uKFwibWVzc2FnZVwiLCBmdW5jdGlvbiAobWVzc2FnZSkge1xuICAgICAgICBpZiAoIWhhc1RpbWVkT3V0KSByZXN1bHRzLnB1c2gobWVzc2FnZSk7XG4gICAgICB9KTtcblxuICAgICAgLy8gSGFuZGxlIGVycm9yc1xuICAgICAgcHlzaGVsbC5vbihcImVycm9yXCIsIGZ1bmN0aW9uIChlcnIpIHtcbiAgICAgICAgY29uc29sZS5lcnJvcihcIlB5dGhvbiBlcnJvcjpcIiwgZXJyKTtcbiAgICAgICAgcmVzb2x2ZShuZXcgUmVzcG9uc2UoSlNPTi5zdHJpbmdpZnkoeyBlcnJvcjogXCJJbnRlcm5hbCBzZXJ2ZXIgZXJyb3JcIiB9KSwgeyBzdGF0dXM6IDUwMCB9KSk7XG4gICAgICB9KTtcblxuICAgICAgLy8gV2hlbiBQeXRob24gc2NyaXB0IGV4aXRzXG4gICAgICBweXNoZWxsLm9uKFwiY2xvc2VcIiwgZnVuY3Rpb24gKGNvZGUpIHtcbiAgICAgICAgaWYgKGhhc1RpbWVkT3V0KSByZXR1cm47IC8vIFNraXAgcHJvY2Vzc2luZyBpZiB0aW1lb3V0IGFscmVhZHkgdHJpZ2dlcmVkXG5cbiAgICAgICAgY29uc29sZS5sb2coXCJERUJVRzogUHl0aG9uIHNjcmlwdCBleGl0ZWQgd2l0aCBjb2RlXCIsIGNvZGUpO1xuICAgICAgICBjb25zb2xlLmxvZyhcIkRFQlVHOiBSYXcgUHl0aG9uIG91dHB1dDpcIiwgcmVzdWx0cyk7XG5cbiAgICAgICAgdHJ5IHtcbiAgICAgICAgICBjb25zdCBwYXJzZWRPdXRwdXQgPSBKU09OLnBhcnNlKHJlc3VsdHMuam9pbihcIlxcblwiKSk7IC8vIOKchSBFbnN1cmUgY29ycmVjdCBKU09OIHBhcnNpbmdcbiAgICAgICAgICByZXNvbHZlKG5ldyBSZXNwb25zZShKU09OLnN0cmluZ2lmeShwYXJzZWRPdXRwdXQpLCB7IHN0YXR1czogMjAwIH0pKTtcbiAgICAgICAgfSBjYXRjaCAoanNvbkVycm9yKSB7XG4gICAgICAgICAgY29uc29sZS5lcnJvcihcIkpTT04gUGFyc2UgRXJyb3I6XCIsIGpzb25FcnJvcik7XG4gICAgICAgICAgcmVzb2x2ZShuZXcgUmVzcG9uc2UoSlNPTi5zdHJpbmdpZnkoeyBlcnJvcjogXCJJbnZhbGlkIEpTT04gcmVzcG9uc2UgZnJvbSBQeXRob24gc2NyaXB0XCIgfSksIHsgc3RhdHVzOiA1MDAgfSkpO1xuICAgICAgICB9XG4gICAgICB9KTtcblxuICAgICAgLy8gKipUaW1lb3V0IGlmIFB5dGhvbiB0YWtlcyB0b28gbG9uZyoqXG4gICAgICBzZXRUaW1lb3V0KCgpID0+IHtcbiAgICAgICAgY29uc29sZS5lcnJvcihcIkVSUk9SOiBQeXRob24gc2NyaXB0IHRpbWVkIG91dC5cIik7XG4gICAgICAgIGhhc1RpbWVkT3V0ID0gdHJ1ZTtcbiAgICAgICAgcHlzaGVsbC50ZXJtaW5hdGUoKTtcbiAgICAgICAgcmVzb2x2ZShuZXcgUmVzcG9uc2UoSlNPTi5zdHJpbmdpZnkoeyBlcnJvcjogXCJQeXRob24gc2NyaXB0IHRpbWVvdXRcIiB9KSwgeyBzdGF0dXM6IDUwMCB9KSk7XG4gICAgICB9LCAxMDAwMCk7IC8vIDEwIHNlY29uZHMgdGltZW91dFxuICAgIH0pO1xuICB9IGNhdGNoIChlcnJvcikge1xuICAgIGNvbnNvbGUuZXJyb3IoXCJBUEkgRXJyb3I6XCIsIGVycm9yKTtcbiAgICByZXR1cm4gbmV3IFJlc3BvbnNlKEpTT04uc3RyaW5naWZ5KHsgZXJyb3I6IFwiU2VydmVyIGVycm9yXCIgfSksIHsgc3RhdHVzOiA1MDAgfSk7XG4gIH1cbn1cbiJdLCJuYW1lcyI6WyJQeXRob25TaGVsbCIsInJ1bnRpbWUiLCJQT1NUIiwicmVxIiwic21pbGVzIiwianNvbiIsImNvbnNvbGUiLCJlcnJvciIsIlJlc3BvbnNlIiwiSlNPTiIsInN0cmluZ2lmeSIsInN0YXR1cyIsImxvZyIsIm9wdGlvbnMiLCJtb2RlIiwicHl0aG9uUGF0aCIsImFyZ3MiLCJQcm9taXNlIiwicmVzb2x2ZSIsInB5c2hlbGwiLCJyZXN1bHRzIiwiaGFzVGltZWRPdXQiLCJvbiIsIm1lc3NhZ2UiLCJwdXNoIiwiZXJyIiwiY29kZSIsInBhcnNlZE91dHB1dCIsInBhcnNlIiwiam9pbiIsImpzb25FcnJvciIsInNldFRpbWVvdXQiLCJ0ZXJtaW5hdGUiXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(rsc)/./src/app/api/predict/route.js\n");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   POST: () => (/* binding */ POST),\n/* harmony export */   runtime: () => (/* binding */ runtime)\n/* harmony export */ });\nconst runtime = \"nodejs\"; // ✅ Ensure Vercel treats it as a Node.js function\nasync function POST(req) {\n    try {\n        const { smiles } = await req.json();\n        if (!smiles) {\n            return new Response(JSON.stringify({\n                error: \"No SMILES provided\"\n            }), {\n                status: 400\n            });\n        }\n        console.log(\"DEBUG: Running Python script with input:\", smiles);\n        const { spawn } = __webpack_require__(/*! child_process */ \"child_process\");\n        const pythonProcess = spawn(\"python3\", [\n            \"predict.py\",\n            smiles\n        ]);\n        return new Promise((resolve)=>{\n            let results = \"\";\n            pythonProcess.stdout.on(\"data\", (data)=>results += data.toString());\n            pythonProcess.stderr.on(\"data\", (err)=>console.error(\"Python Error:\", err.toString()));\n            pythonProcess.on(\"close\", ()=>{\n                resolve(new Response(results.trim(), {\n                    status: 200,\n                    headers: {\n                        \"Content-Type\": \"application/json\"\n                    }\n                }));\n            });\n        });\n    } catch (error) {\n        return new Response(JSON.stringify({\n            error: \"Server error\"\n        }), {\n            status: 500\n        });\n    }\n}\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9zcmMvYXBwL2FwaS9wcmVkaWN0L3JvdXRlLmpzIiwibWFwcGluZ3MiOiI7Ozs7O0FBQU8sTUFBTUEsVUFBVSxTQUFTLENBQUMsa0RBQWtEO0FBRTVFLGVBQWVDLEtBQUtDLEdBQUc7SUFDNUIsSUFBSTtRQUNGLE1BQU0sRUFBRUMsTUFBTSxFQUFFLEdBQUcsTUFBTUQsSUFBSUUsSUFBSTtRQUNqQyxJQUFJLENBQUNELFFBQVE7WUFDWCxPQUFPLElBQUlFLFNBQVNDLEtBQUtDLFNBQVMsQ0FBQztnQkFBRUMsT0FBTztZQUFxQixJQUFJO2dCQUFFQyxRQUFRO1lBQUk7UUFDckY7UUFFQUMsUUFBUUMsR0FBRyxDQUFDLDRDQUE0Q1I7UUFFeEQsTUFBTSxFQUFFUyxLQUFLLEVBQUUsR0FBR0MsbUJBQU9BLENBQUMsb0NBQWU7UUFDekMsTUFBTUMsZ0JBQWdCRixNQUFNLFdBQVc7WUFBQztZQUFjVDtTQUFPO1FBRTdELE9BQU8sSUFBSVksUUFBUSxDQUFDQztZQUNsQixJQUFJQyxVQUFVO1lBQ2RILGNBQWNJLE1BQU0sQ0FBQ0MsRUFBRSxDQUFDLFFBQVEsQ0FBQ0MsT0FBVUgsV0FBV0csS0FBS0MsUUFBUTtZQUNuRVAsY0FBY1EsTUFBTSxDQUFDSCxFQUFFLENBQUMsUUFBUSxDQUFDSSxNQUFRYixRQUFRRixLQUFLLENBQUMsaUJBQWlCZSxJQUFJRixRQUFRO1lBQ3BGUCxjQUFjSyxFQUFFLENBQUMsU0FBUztnQkFDeEJILFFBQVEsSUFBSVgsU0FBU1ksUUFBUU8sSUFBSSxJQUFJO29CQUFFZixRQUFRO29CQUFLZ0IsU0FBUzt3QkFBRSxnQkFBZ0I7b0JBQW1CO2dCQUFFO1lBQ3RHO1FBQ0Y7SUFDRixFQUFFLE9BQU9qQixPQUFPO1FBQ2QsT0FBTyxJQUFJSCxTQUFTQyxLQUFLQyxTQUFTLENBQUM7WUFBRUMsT0FBTztRQUFlLElBQUk7WUFBRUMsUUFBUTtRQUFJO0lBQy9FO0FBQ0YiLCJzb3VyY2VzIjpbIi9Vc2Vycy9yYW1hbGluZ2Fta2FubmFuL2NvZGluZy9QaGFybWFTZWUtd2Vic2l0ZS9zcmMvYXBwL2FwaS9wcmVkaWN0L3JvdXRlLmpzIl0sInNvdXJjZXNDb250ZW50IjpbImV4cG9ydCBjb25zdCBydW50aW1lID0gXCJub2RlanNcIjsgLy8g4pyFIEVuc3VyZSBWZXJjZWwgdHJlYXRzIGl0IGFzIGEgTm9kZS5qcyBmdW5jdGlvblxuXG5leHBvcnQgYXN5bmMgZnVuY3Rpb24gUE9TVChyZXEpIHtcbiAgdHJ5IHtcbiAgICBjb25zdCB7IHNtaWxlcyB9ID0gYXdhaXQgcmVxLmpzb24oKTtcbiAgICBpZiAoIXNtaWxlcykge1xuICAgICAgcmV0dXJuIG5ldyBSZXNwb25zZShKU09OLnN0cmluZ2lmeSh7IGVycm9yOiBcIk5vIFNNSUxFUyBwcm92aWRlZFwiIH0pLCB7IHN0YXR1czogNDAwIH0pO1xuICAgIH1cblxuICAgIGNvbnNvbGUubG9nKFwiREVCVUc6IFJ1bm5pbmcgUHl0aG9uIHNjcmlwdCB3aXRoIGlucHV0OlwiLCBzbWlsZXMpO1xuXG4gICAgY29uc3QgeyBzcGF3biB9ID0gcmVxdWlyZShcImNoaWxkX3Byb2Nlc3NcIik7XG4gICAgY29uc3QgcHl0aG9uUHJvY2VzcyA9IHNwYXduKFwicHl0aG9uM1wiLCBbXCJwcmVkaWN0LnB5XCIsIHNtaWxlc10pO1xuXG4gICAgcmV0dXJuIG5ldyBQcm9taXNlKChyZXNvbHZlKSA9PiB7XG4gICAgICBsZXQgcmVzdWx0cyA9IFwiXCI7XG4gICAgICBweXRob25Qcm9jZXNzLnN0ZG91dC5vbihcImRhdGFcIiwgKGRhdGEpID0+IChyZXN1bHRzICs9IGRhdGEudG9TdHJpbmcoKSkpO1xuICAgICAgcHl0aG9uUHJvY2Vzcy5zdGRlcnIub24oXCJkYXRhXCIsIChlcnIpID0+IGNvbnNvbGUuZXJyb3IoXCJQeXRob24gRXJyb3I6XCIsIGVyci50b1N0cmluZygpKSk7XG4gICAgICBweXRob25Qcm9jZXNzLm9uKFwiY2xvc2VcIiwgKCkgPT4ge1xuICAgICAgICByZXNvbHZlKG5ldyBSZXNwb25zZShyZXN1bHRzLnRyaW0oKSwgeyBzdGF0dXM6IDIwMCwgaGVhZGVyczogeyBcIkNvbnRlbnQtVHlwZVwiOiBcImFwcGxpY2F0aW9uL2pzb25cIiB9IH0pKTtcbiAgICAgIH0pO1xuICAgIH0pO1xuICB9IGNhdGNoIChlcnJvcikge1xuICAgIHJldHVybiBuZXcgUmVzcG9uc2UoSlNPTi5zdHJpbmdpZnkoeyBlcnJvcjogXCJTZXJ2ZXIgZXJyb3JcIiB9KSwgeyBzdGF0dXM6IDUwMCB9KTtcbiAgfVxufVxuIl0sIm5hbWVzIjpbInJ1bnRpbWUiLCJQT1NUIiwicmVxIiwic21pbGVzIiwianNvbiIsIlJlc3BvbnNlIiwiSlNPTiIsInN0cmluZ2lmeSIsImVycm9yIiwic3RhdHVzIiwiY29uc29sZSIsImxvZyIsInNwYXduIiwicmVxdWlyZSIsInB5dGhvblByb2Nlc3MiLCJQcm9taXNlIiwicmVzb2x2ZSIsInJlc3VsdHMiLCJzdGRvdXQiLCJvbiIsImRhdGEiLCJ0b1N0cmluZyIsInN0ZGVyciIsImVyciIsInRyaW0iLCJoZWFkZXJzIl0sImlnbm9yZUxpc3QiOltdLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///(rsc)/./src/app/api/predict/route.js\n");
 
 /***/ }),
 
@@ -87,28 +87,6 @@ module.exports = require("child_process");
 
 /***/ }),
 
-/***/ "events":
-/*!*************************!*\
-  !*** external "events" ***!
-  \*************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("events");
-
-/***/ }),
-
-/***/ "fs":
-/*!*********************!*\
-  !*** external "fs" ***!
-  \*********************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("fs");
-
-/***/ }),
-
 /***/ "next/dist/compiled/next-server/app-page.runtime.dev.js":
 /*!*************************************************************************!*\
   !*** external "next/dist/compiled/next-server/app-page.runtime.dev.js" ***!
@@ -129,50 +107,6 @@ module.exports = require("next/dist/compiled/next-server/app-page.runtime.dev.js
 "use strict";
 module.exports = require("next/dist/compiled/next-server/app-route.runtime.dev.js");
 
-/***/ }),
-
-/***/ "os":
-/*!*********************!*\
-  !*** external "os" ***!
-  \*********************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("os");
-
-/***/ }),
-
-/***/ "path":
-/*!***********************!*\
-  !*** external "path" ***!
-  \***********************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("path");
-
-/***/ }),
-
-/***/ "stream":
-/*!*************************!*\
-  !*** external "stream" ***!
-  \*************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("stream");
-
-/***/ }),
-
-/***/ "util":
-/*!***********************!*\
-  !*** external "util" ***!
-  \***********************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("util");
-
 /***/ })
 
 };
@@ -182,7 +116,7 @@ module.exports = require("util");
 var __webpack_require__ = require("../../../webpack-runtime.js");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = __webpack_require__.X(0, ["vendor-chunks/next","vendor-chunks/python-shell"], () => (__webpack_exec__("(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader/index.js?name=app%2Fapi%2Fpredict%2Froute&page=%2Fapi%2Fpredict%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fpredict%2Froute.js&appDir=%2FUsers%2Framalingamkannan%2Fcoding%2FPharmaSee-website%2Fsrc%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Framalingamkannan%2Fcoding%2FPharmaSee-website&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!")));
+var __webpack_exports__ = __webpack_require__.X(0, ["vendor-chunks/next"], () => (__webpack_exec__("(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader/index.js?name=app%2Fapi%2Fpredict%2Froute&page=%2Fapi%2Fpredict%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fpredict%2Froute.js&appDir=%2FUsers%2Framalingamkannan%2Fcoding%2FPharmaSee-website%2Fsrc%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Framalingamkannan%2Fcoding%2FPharmaSee-website&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!")));
 module.exports = __webpack_exports__;
 
 })();
