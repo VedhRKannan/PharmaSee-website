@@ -1,4 +1,4 @@
-export const runtime = "nodejs"; // ✅ Ensure Vercel treats this as a Node.js function
+export const runtime = "nodejs"; // ✅ Ensures it's a server function
 
 export async function POST(req) {
   try {
@@ -21,6 +21,7 @@ export async function POST(req) {
       });
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: "Server error" }), { status: 500 });
+    console.error("Server Error:", error);
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
   }
 }
