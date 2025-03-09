@@ -1,4 +1,4 @@
-export const runtime = "nodejs"; // ✅ Ensure it's a function, not a static file
+export const runtime = "nodejs"; // ✅ Ensures it's a function, not static
 
 export async function POST(req) {
   try {
