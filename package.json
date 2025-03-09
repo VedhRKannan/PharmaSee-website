@@ -20,11 +20,6 @@
     "@eslint/eslintrc": "^3",
     "eslint": "^9",
     "eslint-config-next": "15.2.1"
-  },
-
-  "scripts": {
-  "build": "next build",
-  "vercel-build": "next build"
-}
+  }
 
 }
