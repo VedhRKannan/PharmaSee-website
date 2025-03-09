@@ -3,13 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next lint",
-  "vercel-build": "pip install -r requirements.txt && next build"
-},
-
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
     "next": "15.2.1",
@@ -23,5 +21,6 @@
     "eslint": "^9",
     "eslint-config-next": "15.2.1"
   }
+
 
 }
