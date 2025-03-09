@@ -24,7 +24,7 @@ export default function Home() {
       const response = await fetch("/api/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ smiles }), // Ensure JSON format
+        body: JSON.stringify({ smiles }),
       });
 
       if (!response.ok) {
@@ -32,10 +32,11 @@ export default function Home() {
       }
 
       const data = await response.json();
-      setPrediction(data.prediction);
+      console.log("✅ Received API Response:", data); // 🔍 Debugging output
+      setPrediction(data);  // ✅ Store the received prediction
     } catch (error) {
-      console.error("Fetch error:", error);
-      setError("Failed to fetch prediction. Check console for details.");
+      console.error("❌ Fetch error:", error);
+      setError("Failed to fetch prediction.");
     }
 
     setLoading(false);
@@ -60,7 +61,7 @@ export default function Home() {
       {prediction && (
         <div style={styles.result}>
           <h2>Prediction</h2>
-          <pre>{JSON.stringify(prediction, null, 2)}</pre>
+          <pre>{JSON.stringify(prediction, null, 2)}</pre> {/* ✅ Properly formatted JSON output */}
         </div>
       )}
       <h2>Examples</h2>
@@ -100,6 +101,7 @@ const styles = {
     backgroundColor: "#f9f9f9",
     padding: "1rem",
     borderRadius: "5px",
+    marginTop: "1rem",
   },
   examples: {
     display: "flex",

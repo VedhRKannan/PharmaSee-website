@@ -1,16 +1,19 @@
 import sys
 import joblib
 import numpy as np
-import warnings
+import json
+import rdkit
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import DataStructs
+import warnings
 
-# Suppress all warnings
+# Suppress RDKit warnings
+from rdkit import RDLogger
+RDLogger.DisableLog("rdApp.*")
+
+# Suppress other warnings
 warnings.filterwarnings("ignore")
-
-# Redirect stderr to null to suppress error messages
-sys.stderr = open('/dev/null', 'w')
 
 def mol_to_fp(smiles, radius=2, nBits=1024):
     """Convert SMILES to Morgan fingerprint."""
@@ -32,14 +35,16 @@ except Exception:
 def main():
     """Run predictions silently."""
     if len(sys.argv) < 2:
-        sys.exit(1)  # Exit silently if no input
+        print(json.dumps({"error": "No SMILES string provided"}))  # Ensure JSON output
+        sys.exit(1)
 
     smiles = sys.argv[1]
-    
+
     try:
-        preds = {name: model.predict([mol_to_fp(smiles)])[0] for name, model in loaded_models.items()}
-        print(preds)  # Output should be JSON serializable
+        preds = {name: float(model.predict([mol_to_fp(smiles)])[0]) for name, model in loaded_models.items()}
+        print(json.dumps(preds))  # ✅ Ensure valid JSON output
     except Exception:
+        print(json.dumps({"error": "Prediction error"}))
         sys.exit(1)  # Exit silently on any prediction error
 
 if __name__ == '__main__':
