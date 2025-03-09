@@ -14,7 +14,7 @@ export async function POST(req) {
 
     let options = {
       mode: "text",
-      pythonPath: "/Users/ramalingamkannan/coding/PharmaSee-website/pharmasee/venv/bin/python3", // ✅ Ensuring python3 is used
+      pythonPath: "/usr/bin/python3", // ✅ Ensuring python3 is used
       args: [smiles],
     };
 
