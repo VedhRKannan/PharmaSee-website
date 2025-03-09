@@ -11,7 +11,7 @@ export async function POST(req) {
 
     let options = {
       mode: "text",
-      pythonPath: "/Users/ramalingamkannan/coding/PharmaSee-website/pharmasee/venv/bin/python", // Adjust if needed
+      pythonPath: "/Users/ramalingamkannan/coding/PharmaSee-website/pharmasee/venv/bin/python3", // Adjust if needed
       args: [smiles],
     };
 
