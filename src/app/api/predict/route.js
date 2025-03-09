@@ -14,7 +14,7 @@ export async function POST(req) {
 
     let options = {
       mode: "text",
-      pythonPath: "/usr/bin/python3", // ✅ Ensuring python3 is used
+      pythonPath: "/Users/ramalingamkannan/miniforge3/bin/python3", // ✅ Ensuring python3 is used
       args: [smiles],
     };
 
